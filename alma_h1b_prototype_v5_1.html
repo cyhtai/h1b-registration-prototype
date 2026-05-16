@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alma — H-1B Registration Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#1a7a6e;--teal-mid:#2a9d8f;--teal-light:#e6f4f2;--teal-pale:#f2faf9;
+  --dark:#111e1d;--mid:#4a6562;--muted:#8da5a2;--border:#d0e4e1;
+  --bg:#f4f7f6;--white:#ffffff;
+  --red:#c53030;--red-light:#fff5f5;--red-border:#fecaca;
+  --amber:#b45309;--amber-light:#fffbeb;--amber-border:#fde68a;
+  --gray-50:#f8fafa;--gray-100:#eef1f0;--gray-200:#d8e0de;
+  --radius:7px;--radius-lg:11px;
+  --shadow-sm:0 1px 4px rgba(17,30,29,0.07);
+  --shadow-md:0 4px 18px rgba(17,30,29,0.1);
+  --shadow-lg:0 16px 48px rgba(17,30,29,0.16);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--dark);font-size:13.5px;line-height:1.5;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--dark);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;}
+.logo-mark{width:28px;height:28px;background:var(--teal-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;}
+.topbar-name{font-size:14px;font-weight:700;color:white;letter-spacing:-0.02em;}
+.tdiv{width:1px;height:20px;background:rgba(255,255,255,0.12);}
+.topbar-crumb{font-size:12.5px;color:rgba(255,255,255,0.5);}
+.topbar-page{font-size:13px;color:rgba(255,255,255,0.9);font-weight:500;}
+.season-badge{font-size:10.5px;font-weight:600;font-family:'IBM Plex Mono',monospace;background:rgba(42,157,143,0.25);color:#7dd3cc;padding:2px 8px;border-radius:20px;border:1px solid rgba(42,157,143,0.3);}
+.topbar-sp{flex:1;}
+.avatar-wrap{position:relative;}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--teal);border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;cursor:pointer;}
+.av-tip{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--dark);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);padding:10px 14px;white-space:nowrap;z-index:999;box-shadow:var(--shadow-md);}
+.avatar-wrap:hover .av-tip{display:block;}
+.av-name{font-size:13px;font-weight:600;color:white;}
+.av-role{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.av-perm{font-size:10.5px;color:var(--teal-mid);margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+
+/* APP */
+.app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.view{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.view.active{display:flex;}
+
+/* WORKBENCH */
+.wb-header{background:var(--white);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;}
+.wb-title-block{}
+.wb-title{font-size:17px;font-weight:700;color:var(--dark);letter-spacing:-0.02em;}
+.wb-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.wb-sub strong{color:var(--dark);font-weight:500;}
+.search-bar{display:flex;align-items:center;gap:7px;background:var(--gray-50);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;font-size:12.5px;color:var(--muted);width:210px;cursor:text;flex-shrink:0;}
+
+.status-bar{background:var(--white);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+.sb-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-right:4px;}
+.stat-pill{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--mid);background:var(--gray-50);border:1px solid var(--border);padding:3px 10px;border-radius:20px;}
+.stat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.stat-count{font-weight:700;font-family:'IBM Plex Mono',monospace;margin-left:2px;}
+
+.table-wrap{flex:1;overflow-y:auto;padding:14px 24px 24px;}
+.wb-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;}
+.wb-table thead tr{background:var(--gray-50);}
+.wb-table th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+.wb-table td{padding:13px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+.wb-table tbody tr:last-child td{border-bottom:none;}
+.wb-table tbody tr.clickable{cursor:pointer;transition:background 0.1s;}
+.wb-table tbody tr.clickable:hover{background:var(--teal-pale);}
+.wb-table tbody tr.dimmed{opacity:0.5;}
+.emp-name{font-weight:600;color:var(--dark);font-size:13.5px;}
+.emp-sub{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.atty-chip{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mid);}
+.atty-av{width:24px;height:24px;border-radius:50%;background:var(--teal-light);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;}
+.count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:24px;padding:0 6px;border-radius:6px;background:var(--gray-100);font-size:12.5px;font-weight:600;color:var(--mid);font-family:'IBM Plex Mono',monospace;}
+.dt-text{font-size:12px;color:var(--mid);font-family:'IBM Plex Mono',monospace;}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500;white-space:nowrap;}
+.chip::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.chip-intake{background:#fff7ed;color:#9a3412;}.chip-intake::before{background:#c2410c;}
+.chip-issues{background:var(--red-light);color:var(--red);}.chip-issues::before{background:var(--red);}
+.chip-template{background:var(--teal-light);color:var(--teal);}.chip-template::before{background:var(--teal);}
+.chip-pending{background:#faf5ff;color:#6b21a8;}.chip-pending::before{background:#9333ea;}
+.chip-submitted{background:#f0fdf4;color:#166534;}.chip-submitted::before{background:#16a34a;}
+
+/* deadline */
+.dl-cell{display:flex;align-items:center;gap:7px;font-size:11.5px;font-family:'IBM Plex Mono',monospace;}
+.dl-bar{width:44px;height:3px;background:var(--gray-200);border-radius:2px;overflow:hidden;}
+.dl-fill{height:100%;border-radius:2px;}
+.dl-ok{color:var(--mid);}.dl-warn{color:var(--amber);font-weight:600;}.dl-danger{color:var(--red);font-weight:600;}
+
+/* CASE DETAIL */
+.case-header{background:var(--white);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.back-btn{display:flex;align-items:center;gap:4px;font-size:12.5px;color:var(--mid);background:none;border:1px solid var(--border);border-radius:var(--radius);padding:5px 10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.12s;}
+.back-btn:hover{background:var(--teal-light);color:var(--teal);border-color:var(--teal-light);}
+.vdiv{width:1px;height:26px;background:var(--gray-200);}
+.ch-info{flex:1;}
+.ch-name{font-size:16px;font-weight:700;letter-spacing:-0.02em;color:var(--dark);display:flex;align-items:center;gap:10px;}
+.ch-meta{display:flex;align-items:center;gap:16px;margin-top:3px;}
+.ch-mi{font-size:11.5px;color:var(--mid);font-family:'IBM Plex Mono',monospace;}
+
+/* stepper */
+.stepper{background:var(--white);border-bottom:1px solid var(--border);padding:9px 24px;display:flex;align-items:center;overflow-x:auto;flex-shrink:0;}
+.step{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap;padding:4px 8px;border-radius:20px;}
+.step.done{color:var(--teal);}.step.active{color:white;background:var(--teal);font-weight:600;}.step.blocked{color:var(--red);}
+.step-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.step-arr{font-size:10px;color:var(--gray-200);margin:0 1px;flex-shrink:0;}
+
+/* tabs */
+.tabs{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;flex-shrink:0;}
+.tab{padding:11px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.12s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.tab:hover{color:var(--teal);}.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab-badge{background:var(--red-light);color:var(--red);font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;}
+.tc{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.tc.active{display:flex;}
+
+/* PANEL A — two column grid */
+.pa-body{flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:14px;}
+.pa-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;flex-direction:column;}
+.card-header{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.card-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+.card-body{padding:10px 16px;flex:1;}
+.card-footer{padding:10px 16px 14px;display:flex;align-items:center;justify-content:flex-end;gap:8px;border-top:1px solid var(--gray-100);}
+.edit-btn{background:transparent;border:1px solid var(--border);border-radius:var(--radius);padding:4px 10px;font-size:11.5px;font-weight:500;color:var(--mid);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.12s;}
+.edit-btn:hover{border-color:var(--teal);color:var(--teal);}
+.save-btn{background:var(--teal);color:white;border:none;border-radius:var(--radius);padding:5px 14px;font-size:12px;font-weight:600;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;}
+.save-btn:hover{background:#155f55;}
+.cancel-btn{background:transparent;border:1px solid var(--border);border-radius:var(--radius);padding:5px 12px;font-size:12px;color:var(--mid);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
+.save-confirm{font-size:11.5px;color:var(--teal);font-weight:500;margin-right:auto;}
+
+/* checklist */
+.chk-item{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--gray-100);}
+.chk-item:last-child{border-bottom:none;}
+.chk-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;}
+.chk-yes{background:var(--teal-light);color:var(--teal);}.chk-no{background:var(--red-light);color:var(--red);}
+.chk-label{font-size:12.5px;color:var(--dark);font-weight:500;}
+.chk-val{font-size:11.5px;color:var(--mid);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.chk-inp{width:100%;border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;color:var(--dark);outline:none;margin-top:2px;}
+.chk-inp:focus{border-color:var(--teal);}
+
+/* docs */
+.doc-item{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--gray-50);border-radius:6px;margin-bottom:6px;border:1px solid var(--gray-100);}
+.doc-name{font-size:12px;font-weight:500;color:var(--dark);flex:1;}
+.doc-meta{font-size:10.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+.doc-ok{font-size:11px;color:var(--teal);font-weight:600;}
+.add-doc-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--teal);background:var(--teal-light);border:none;border-radius:var(--radius);padding:5px 10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;margin-top:4px;}
+
+/* notes */
+.notes-read{font-size:12px;color:var(--mid);padding:4px 0;}
+.notes-ph{color:var(--muted);font-style:italic;}
+.notes-area{width:100%;border:1px solid var(--border);border-radius:5px;padding:7px 10px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;color:var(--dark);resize:vertical;min-height:58px;outline:none;}
+.notes-area:focus{border-color:var(--teal);}
+.notes-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px;margin-top:12px;display:block;}
+
+/* USCIS fields */
+.uscis-row{display:grid;grid-template-columns:148px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-100);align-items:start;}
+.uscis-row:last-child{border-bottom:none;}
+.uscis-lbl{font-size:12px;color:var(--muted);font-weight:500;padding-top:2px;}
+.read-val{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--dark);}
+.read-empty{color:var(--muted);font-style:italic;font-family:'IBM Plex Sans',monospace;font-size:12px;}
+.fi{border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--dark);outline:none;width:100%;}
+.fi:focus{border-color:var(--teal);}
+.fi-hint{font-size:10.5px;color:var(--muted);margin-top:3px;}
+
+/* PANEL B */
+.pb-upload{flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:14px;}
+.vs-empty-bar{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 16px;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;}
+.upload-zone{background:var(--white);border:2px dashed var(--border);border-radius:var(--radius-lg);padding:44px 24px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:all 0.15s;text-align:center;}
+.upload-zone:hover{border-color:var(--teal-mid);background:var(--teal-pale);}
+.upload-title{font-size:15px;font-weight:700;color:var(--dark);}
+.upload-sub{font-size:12.5px;color:var(--muted);max-width:400px;}
+.type-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
+.type-tag{padding:3px 8px;background:var(--gray-100);border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--mid);}
+.processing{display:none;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;flex-direction:column;align-items:center;gap:12px;}
+.prog-bar{width:100%;height:5px;background:var(--gray-200);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--teal-mid);border-radius:3px;animation:prog 3.5s ease-in-out forwards;}
+@keyframes prog{from{width:0%}to{width:100%}}
+
+.pb-val{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* batch health */
+.bh-bar{background:var(--white);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:18px;flex-shrink:0;}
+.bh-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+.bh-stat{display:flex;align-items:baseline;gap:5px;}
+.bh-num{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
+.bh-sub{font-size:11px;color:var(--muted);line-height:1.3;}
+.bh-div{width:1px;height:28px;background:var(--gray-200);}
+.n-total{color:var(--dark);}.n-clean{color:var(--teal);}.n-review{color:var(--amber);}.n-blocked{color:var(--red);}
+.issue-tags{display:flex;gap:6px;align-items:center;margin-left:auto;}
+.itag{font-size:11px;padding:3px 9px;border-radius:4px;font-weight:500;}
+.itag-fmt{background:var(--amber-light);color:var(--amber);}
+.itag-comp{background:var(--red-light);color:var(--red);}
+.itag-dup{background:#faf5ff;color:#7e22ce;}
+.gen-btn{background:var(--teal);color:white;border:none;padding:7px 14px;border-radius:var(--radius);font-size:12.5px;font-weight:600;font-family:'IBM Plex Sans',sans-serif;cursor:not-allowed;opacity:0.45;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;}
+.gen-btn.enabled{opacity:1;cursor:pointer;}.gen-btn.enabled:hover{background:#155f55;}
+
+/* source docs button */
+.src-docs-btn-wrap{padding:8px 24px 0;flex-shrink:0;}
+.src-docs-trigger{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--teal);background:var(--teal-light);border:none;border-radius:var(--radius);padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.12s;}
+.src-docs-trigger:hover{background:var(--teal);color:white;}
+
+/* bene table */
+.bene-wrap{flex:1;overflow:auto;padding:8px 24px 24px;}
+.bene-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;min-width:880px;}
+.bene-table thead tr{background:var(--gray-50);}
+.bene-table th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+.bene-table td{padding:10px 12px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+.bene-table tbody tr:last-child td{border-bottom:none;}
+.bene-table tbody tr{cursor:pointer;transition:background 0.1s;}
+.bene-table tbody tr:hover{background:var(--teal-pale);}
+.bene-name{font-weight:600;font-size:13px;color:var(--dark);}
+.pp-ok{color:var(--teal);font-size:11px;font-weight:600;}
+.pp-miss{color:var(--red);font-size:11px;font-weight:600;}
+.pp-exp{color:var(--amber);font-size:11px;font-weight:600;}
+
+/* confidence chips — short labels only */
+.conf-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;font-size:11.5px;font-weight:600;cursor:default;}
+.conf-h{background:var(--teal-light);color:var(--teal);}
+.conf-m{background:var(--amber-light);color:var(--amber);}
+.conf-l{background:var(--red-light);color:var(--red);}
+.iss-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;}
+.iss-clean{background:var(--teal-light);color:var(--teal);}
+.iss-warn{background:var(--amber-light);color:var(--amber);}
+.iss-block{background:var(--red-light);color:var(--red);}
+
+/* PANEL C */
+.pc-body{flex:1;overflow-y:auto;padding:18px 24px;}
+.log-hdr{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:14px;}
+.log-item{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--gray-100);}
+.log-item:last-child{border-bottom:none;}
+.log-dot{width:7px;height:7px;border-radius:50%;background:var(--teal-mid);margin-top:5px;flex-shrink:0;}
+.log-dot.w{background:var(--amber);}.log-dot.e{background:var(--red);}
+.log-text{font-size:12.5px;color:var(--dark);}
+.log-time{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+
+/* DRAWER */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(17,30,29,0.18);z-index:200;}
+.drawer-overlay.open{display:block;}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:440px;background:var(--white);box-shadow:var(--shadow-lg);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);}
+.drawer.open{transform:translateX(0);}
+.dh{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;}
+.dh-name{font-size:15px;font-weight:700;color:var(--dark);}
+.dh-sub{font-size:11.5px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.dh-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.dh-close{width:26px;height:26px;border-radius:5px;border:none;background:var(--gray-100);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--mid);}
+.dh-close:hover{background:var(--red-light);color:var(--red);}
+.db{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:14px;}
+.ds-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:8px;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fi-item{display:flex;flex-direction:column;gap:2px;}
+.fi-lbl{font-size:10.5px;color:var(--muted);font-weight:500;}
+.fi-val{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--dark);}
+.fi-inp{border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--dark);outline:none;width:100%;}
+.fi-inp:focus{border-color:var(--teal);}
+.drawer-edit-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid var(--gray-100);}
+
+/* source docs in drawer */
+.drawer-src-section{background:var(--gray-50);border:1px solid var(--gray-100);border-radius:var(--radius);padding:12px;}
+.drawer-src-link{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--gray-100);cursor:pointer;text-decoration:none;}
+.drawer-src-link:last-child{border-bottom:none;}
+.drawer-src-link:hover .drawer-src-name{color:var(--teal);text-decoration:underline;}
+.drawer-src-name{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--dark);}
+
+/* flags */
+.flag-card{border:1px solid;border-radius:var(--radius);padding:12px;margin-bottom:8px;}
+.flag-warn{border-color:var(--amber-border);background:var(--amber-light);}
+.flag-error{border-color:var(--red-border);background:var(--red-light);}
+.flag-info{border-color:var(--border);background:var(--gray-50);}
+.fh{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.ftype{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:2px 6px;border-radius:3px;}
+.ftype-e{background:var(--red);color:white;}.ftype-w{background:var(--amber);color:white;}.ftype-i{background:var(--mid);color:white;}
+.ftitle{font-size:12.5px;font-weight:600;color:var(--dark);}
+.fsrc-link{font-size:11px;color:var(--teal);text-decoration:underline;cursor:pointer;font-family:'IBM Plex Mono',monospace;display:block;margin-bottom:4px;}
+.ffix{font-size:12px;color:var(--dark);line-height:1.5;}
+.ffix strong{color:var(--teal);}
+.f-actions{display:flex;gap:7px;margin-top:10px;}
+.f-resolve{flex:1;padding:6px;background:var(--teal);color:white;border:none;border-radius:5px;font-size:12px;font-weight:600;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;}
+.f-resolve:hover{background:#155f55;}
+.f-dismiss{padding:6px 12px;background:transparent;color:var(--muted);border:1px solid var(--gray-200);border-radius:5px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;}
+.f-dismiss:hover{border-color:var(--red);color:var(--red);}
+.clean-badge{background:var(--teal-light);border-radius:var(--radius);padding:14px;text-align:center;color:var(--teal);font-weight:600;font-size:13px;}
+.info-note{background:var(--gray-50);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--mid);}
+
+/* MODALS (shared overlay) */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(17,30,29,0.25);z-index:400;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-lg);}
+
+/* Source docs modal */
+.src-modal{width:560px;max-height:80vh;display:flex;flex-direction:column;}
+.src-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0;}
+.src-modal-title{font-size:15px;font-weight:700;color:var(--dark);}
+.src-modal-body{flex:1;overflow-y:auto;}
+.src-modal-row{display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--gray-50);border-radius:6px;margin-bottom:6px;border:1px solid var(--gray-100);}
+.src-modal-name{font-size:12px;font-weight:500;color:var(--dark);flex:1;font-family:'IBM Plex Mono',monospace;}
+.src-modal-meta{font-size:10.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+.src-modal-status{font-size:11px;font-weight:600;}
+.src-status-ok{color:var(--teal);}
+.src-status-warn{color:var(--amber);}
+.add-more-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--teal);background:var(--teal-light);border:none;border-radius:var(--radius);padding:6px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;margin-top:10px;}
+.modal-close-btn{width:28px;height:28px;border-radius:5px;border:none;background:var(--gray-100);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mid);}
+.modal-close-btn:hover{background:var(--red-light);color:var(--red);}
+
+/* Resolve modal */
+.resolve-modal{width:460px;}
+.modal-flag-type-el{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 7px;border-radius:3px;display:inline-block;margin-bottom:8px;}
+.modal-flag-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.modal-flag-src{font-size:12px;color:var(--mid);margin-bottom:16px;font-family:'IBM Plex Mono',monospace;}
+.modal-label{font-size:11.5px;font-weight:600;color:var(--dark);margin-bottom:5px;display:block;}
+.modal-textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;outline:none;resize:vertical;min-height:80px;margin-bottom:12px;}
+.modal-textarea:focus{border-color:var(--teal);}
+.modal-upload-zone{border:1.5px dashed var(--border);border-radius:var(--radius);padding:14px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:16px;transition:all 0.12s;}
+.modal-upload-zone:hover{border-color:var(--teal-mid);background:var(--teal-pale);}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:12.5px;font-weight:500;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;border:none;transition:all 0.12s;}
+.btn-primary{background:var(--teal);color:white;}.btn-primary:hover{background:#155f55;}
+.btn-ghost{background:transparent;color:var(--mid);border:1px solid var(--border);}.btn-ghost:hover{background:var(--teal-light);color:var(--teal);border-color:var(--teal-light);}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo-mark">A</div>
+  <div class="topbar-name">Alma</div>
+  <div class="tdiv"></div>
+  <div class="topbar-crumb">Immigration Ops</div>
+  <div class="tdiv"></div>
+  <div class="topbar-page">H-1B Registration Command Center</div>
+  <span class="season-badge">FY 2027 Season</span>
+  <div class="topbar-sp"></div>
+  <div class="avatar-wrap">
+    <div class="avatar">CT</div>
+    <div class="av-tip">
+      <div class="av-name">Catherine Tai</div>
+      <div class="av-role">Immigration Attorney</div>
+      <div class="av-perm">ROLE: ATTORNEY · Full access</div>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- ══ WORKBENCH ══ -->
+<div class="view active" id="view-wb">
+  <div class="wb-header">
+    <div class="wb-title-block">
+      <div class="wb-title">Registration Workbench</div>
+      <div class="wb-sub">5 active cases · Registration window closes <strong>Mar 24, 2027</strong> · 18 days remaining</div>
+    </div>
+    <div class="search-bar">🔍 Search employers…</div>
+  </div>
+
+  <div class="status-bar">
+    <span class="sb-label">Cases</span>
+    <div class="stat-pill"><div class="stat-dot" style="background:#c2410c"></div>Intake Incomplete<span class="stat-count">1</span></div>
+    <div class="stat-pill"><div class="stat-dot" style="background:var(--red)"></div>Issues Found<span class="stat-count">1</span></div>
+    <div class="stat-pill"><div class="stat-dot" style="background:var(--teal)"></div>Ready for Template<span class="stat-count">1</span></div>
+    <div class="stat-pill"><div class="stat-dot" style="background:#9333ea"></div>Pending Client Approval<span class="stat-count">1</span></div>
+    <div class="stat-pill"><div class="stat-dot" style="background:#16a34a"></div>Submitted<span class="stat-count">1</span></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="wb-table">
+      <thead>
+        <tr>
+          <th>Employer</th><th>Request Received</th><th>Case Opened</th>
+          <th>Attorney</th><th style="text-align:center">Beneficiaries</th>
+          <th>Status</th><th>Deadline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="clickable" onclick="openCase('novatech')">
+          <td><div class="emp-name">NovaTech Inc.</div><div class="emp-sub">EIN 47-2831940</div></td>
+          <td><div class="dt-text">Mar 07 · 09:14</div></td><td><div class="dt-text">Mar 07 · 10:02</div></td>
+          <td><div class="atty-chip"><div class="atty-av">KL</div>Keith Lee</div></td>
+          <td style="text-align:center"><span class="count-badge">23</span></td>
+          <td><span class="chip chip-issues">Issues Found</span></td>
+          <td><div class="dl-cell dl-danger" title="30-day draft clock: 5 days remaining (binding)"><div class="dl-bar"><div class="dl-fill" style="width:78%;background:var(--red)"></div></div>5d ⚠</div></td>
+        </tr>
+        <tr class="clickable" onclick="openCase('meridian')">
+          <td><div class="emp-name">Meridian Software LLC</div><div class="emp-sub">EIN 82-1047563</div></td>
+          <td><div class="dt-text">Mar 09 · 14:22</div></td><td><div class="dt-text">Mar 09 · 15:00</div></td>
+          <td><div class="atty-chip"><div class="atty-av">CH</div>Cynthia Huang</div></td>
+          <td style="text-align:center"><span class="count-badge" style="color:var(--muted)">—</span></td>
+          <td><span class="chip chip-intake">Intake Incomplete</span></td>
+          <td><div class="dl-cell dl-ok" title="Registration window: 18 days remaining"><div class="dl-bar"><div class="dl-fill" style="width:20%;background:var(--teal)"></div></div>18d</div></td>
+        </tr>
+        <tr class="clickable" onclick="openCase('apex')">
+          <td><div class="emp-name">Apex Dynamics Corp</div><div class="emp-sub">EIN 61-3920174</div></td>
+          <td><div class="dt-text">Mar 06 · 11:35</div></td><td><div class="dt-text">Mar 06 · 12:10</div></td>
+          <td><div class="atty-chip"><div class="atty-av">KL</div>Keith Lee</div></td>
+          <td style="text-align:center"><span class="count-badge">41</span></td>
+          <td><span class="chip chip-template">Ready for Template</span></td>
+          <td><div class="dl-cell dl-warn" title="30-day draft clock: 9 days remaining (binding)"><div class="dl-bar"><div class="dl-fill" style="width:55%;background:var(--amber)"></div></div>9d</div></td>
+        </tr>
+        <tr class="dimmed">
+          <td><div class="emp-name">Horizon Robotics US</div><div class="emp-sub">EIN 35-7620481</div></td>
+          <td><div class="dt-text">Mar 05 · 08:50</div></td><td><div class="dt-text">Mar 05 · 09:30</div></td>
+          <td><div class="atty-chip"><div class="atty-av">CH</div>Cynthia Huang</div></td>
+          <td style="text-align:center"><span class="count-badge">17</span></td>
+          <td><span class="chip chip-pending">Pending Client Approval</span></td>
+          <td><div class="dl-cell dl-ok"><div class="dl-bar"><div class="dl-fill" style="width:14%;background:var(--teal)"></div></div>16d</div></td>
+        </tr>
+        <tr class="dimmed">
+          <td><div class="emp-name">ClearPath AI</div><div class="emp-sub">EIN 90-4410827</div></td>
+          <td><div class="dt-text">Mar 04 · 16:00</div></td><td><div class="dt-text">Mar 04 · 16:45</div></td>
+          <td><div class="atty-chip"><div class="atty-av">KL</div>Keith Lee</div></td>
+          <td style="text-align:center"><span class="count-badge">12</span></td>
+          <td><span class="chip chip-submitted">Submitted ✓</span></td>
+          <td><div class="dl-cell dl-ok" style="color:var(--muted)"><div class="dl-bar"></div>Done</div></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Rows 4–5 are view-only in this prototype. Click rows 1–3 to explore the full case detail.</div>
+  </div>
+</div>
+
+<!-- ══ CASE DETAIL ══ -->
+<div class="view" id="view-detail">
+  <div class="case-header">
+    <button class="back-btn" onclick="backToWB()">← Workbench</button>
+    <div class="vdiv"></div>
+    <div class="ch-info">
+      <div class="ch-name"><span id="ch-name"></span><span class="chip" id="ch-chip"></span></div>
+      <div class="ch-meta">
+        <div class="ch-mi" id="ch-ein"></div>
+        <div class="ch-mi">👤 <span id="ch-atty"></span></div>
+        <div class="ch-mi">📅 <span id="ch-date"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stepper" id="stepper"></div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('pa',this)">Employer Info</div>
+    <div class="tab" id="tab-pb" onclick="switchTab('pb',this)">Beneficiary Intake &amp; Validation <span class="tab-badge" id="pb-badge" style="display:none"></span></div>
+    <div class="tab" onclick="switchTab('pc',this)">Activity Log</div>
+  </div>
+
+  <!-- PANEL A -->
+  <div class="tc active" id="pa">
+    <div class="pa-body" id="pa-body"></div>
+  </div>
+
+  <!-- PANEL B -->
+  <div class="tc" id="pb">
+    <div id="pb-s1" class="pb-upload" style="display:none">
+      <div class="vs-empty-bar">📋 &nbsp;Upload beneficiary documents or a data spreadsheet to begin AI validation.</div>
+      <div class="upload-zone" onclick="simUpload()">
+        <div style="font-size:28px">📂</div>
+        <div class="upload-title">Drop beneficiary files here</div>
+        <div class="upload-sub">Supports bulk data spreadsheets, passport scans, intake forms, and offer letters. Spreadsheet imports are prioritized; documents are used as validation evidence.</div>
+        <div class="type-tags"><span class="type-tag">.xlsx</span><span class="type-tag">.csv</span><span class="type-tag">.pdf</span><span class="type-tag">.jpg / .png</span></div>
+        <button class="btn btn-primary" style="margin-top:8px" onclick="event.stopPropagation();simUpload()">Browse Files</button>
+      </div>
+      <div id="processing" class="processing">
+        <div style="font-size:13.5px;font-weight:600;color:var(--dark)">Extracting and validating beneficiary data…</div>
+        <div style="font-size:12px;color:var(--muted)" id="proc-lbl">Parsing documents…</div>
+        <div class="prog-bar"><div class="prog-fill"></div></div>
+      </div>
+    </div>
+
+    <div id="pb-s2" class="pb-val" style="display:none">
+      <div class="bh-bar">
+        <span class="bh-label">Batch</span>
+        <div class="bh-stat"><span class="bh-num n-total" id="bh-total">0</span><span class="bh-sub">total</span></div>
+        <div class="bh-div"></div>
+        <div class="bh-stat"><span class="bh-num n-clean" id="bh-clean">0</span><span class="bh-sub">Ready</span></div>
+        <div class="bh-stat"><span class="bh-num n-review" id="bh-review">0</span><span class="bh-sub">Needs Review</span></div>
+        <div class="bh-stat"><span class="bh-num n-blocked" id="bh-blocked">0</span><span class="bh-sub">Blocked</span></div>
+        <div class="bh-div"></div>
+        <div class="issue-tags" id="issue-tags"></div>
+        <button class="gen-btn" id="gen-btn">⬇ Generate Template</button>
+      </div>
+      <div class="src-docs-btn-wrap">
+        <button class="src-docs-trigger" onclick="openSrcModal()" id="src-trigger">📎 Source Documents (<span id="src-count">0</span> files)</button>
+      </div>
+      <div class="bene-wrap">
+        <table class="bene-table">
+          <thead>
+            <tr>
+              <th>Beneficiary</th><th>Petitioner Entity</th><th>Passport</th>
+              <th>Country of Birth</th><th>SOC</th><th>Wage Lvl</th>
+              <th>Area of Employment</th><th>Cap Type</th><th>Status</th><th>Issues</th>
+            </tr>
+          </thead>
+          <tbody id="bene-tbody"></tbody>
+        </table>
+        <div style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px" id="bene-more"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL C -->
+  <div class="tc" id="pc">
+    <div class="pc-body">
+      <div class="log-hdr">Activity Log · Non-editable audit trail</div>
+      <div id="log-items"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end app -->
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="d-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dh">
+    <div><div class="dh-name" id="d-name"></div><div class="dh-sub" id="d-sub"></div></div>
+    <div class="dh-actions">
+      <button class="edit-btn" id="d-edit-btn" onclick="enableDrawerEdit()">Edit</button>
+      <button class="dh-close" onclick="closeDrawer()">✕</button>
+    </div>
+  </div>
+  <div class="db" id="d-body"></div>
+</div>
+
+<!-- SOURCE DOCS MODAL -->
+<div class="modal-overlay" id="src-modal-overlay" onclick="closeSrcModal()">
+  <div class="modal src-modal" onclick="event.stopPropagation()">
+    <div class="src-modal-header">
+      <div class="src-modal-title">Source Documents</div>
+      <button class="modal-close-btn" onclick="closeSrcModal()">✕</button>
+    </div>
+    <div class="src-modal-body" id="src-modal-body"></div>
+  </div>
+</div>
+
+<!-- RESOLVE MODAL -->
+<div class="modal-overlay" id="resolve-modal" onclick="closeResolveModal()">
+  <div class="modal resolve-modal" onclick="event.stopPropagation()">
+    <div id="modal-flag-type-el" class="modal-flag-type-el"></div>
+    <div class="modal-flag-title" id="modal-flag-title"></div>
+    <div class="modal-flag-src" id="modal-flag-src"></div>
+    <label class="modal-label">Attorney judgment / reason for resolution *</label>
+    <textarea class="modal-textarea" id="modal-reason" placeholder="Describe why this flag is resolved or provide context for the record…"></textarea>
+    <label class="modal-label">Supporting document (optional)</label>
+    <div class="modal-upload-zone" onclick="alert('File picker: attach supporting document (e.g. updated passport). Document will be linked to this beneficiary record as a source.')">📎 &nbsp;Click to attach a supporting document</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeResolveModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmResolve()">Confirm Resolution</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════ DATA ═══════════════ */
+const CASES = {
+  novatech:{
+    name:'NovaTech Inc.',ein:'EIN 47-2831940',atty:'Keith Lee',date:'Mar 07',
+    chipClass:'chip-issues',chipText:'Issues Found',
+    steps:[{l:'Intake',d:1},{l:'Validation',a:1,b:1},{l:'Template'},{l:'USCIS Upload'},{l:'G-28 / Approval'},{l:'Payment'},{l:'Submitted'}],
+    pbState:2,
+    bh:{total:23,clean:17,review:4,blocked:2,tags:['3 format errors','2 completeness gaps']},
+    srcDocs:[
+      {name:'NovaTech_H1B_2027_Intake.xlsx',meta:'Mar 08 · 1.2 MB',status:'ok',statusText:'✓ Extracted'},
+      {name:'Priya_Krishnamurthy_Passport.pdf',meta:'Mar 08 · 0.8 MB',status:'ok',statusText:'✓ Extracted'},
+      {name:'Arjun_Patel_Intake_Form.pdf',meta:'Mar 08 · 0.4 MB',status:'warn',statusText:'⚠ Needs review'},
+      {name:'Yuki_Tanaka_Passport.pdf',meta:'Mar 08 · 0.7 MB',status:'ok',statusText:'✓ Extracted'},
+      {name:'Lena_Müller_Passport.pdf',meta:'Mar 08 · 0.6 MB',status:'warn',statusText:'⚠ Passport expired'},
+      {name:'Wei_Chen_Passport.pdf',meta:'Mar 08 · 0.7 MB',status:'ok',statusText:'✓ Extracted'},
+    ],
+    bene:[
+      {name:'Wei, Chen',entity:'NovaTech Inc.',pp:'ok',cob:'China',soc:'15-1252',wl:'III',area:'San Jose, CA',cap:'Regular',conf:'h',iss:0,key:'wei',
+       srcDocs:['Wei_Chen_Passport.pdf','NovaTech_H1B_2027_Intake.xlsx · Row 3']},
+      {name:'Krishnamurthy, Priya',entity:'NovaTech Inc.',pp:'ok',cob:'India',soc:'15-1254',wl:'Level 2 ⚠',area:'San Jose, CA',cap:'Adv. Degree',conf:'m',iss:2,key:'priya',
+       srcDocs:['Priya_Krishnamurthy_Passport.pdf','NovaTech_H1B_2027_Intake.xlsx · Row 14']},
+      {name:'Patel, Arjun',entity:'NovaTech Inc.',pp:'miss',cob:'India',soc:'15-1299',wl:'II',area:'Austin, TX',cap:'Regular',conf:'l',iss:2,key:'arjun',
+       srcDocs:['Arjun_Patel_Intake_Form.pdf','NovaTech_H1B_2027_Intake.xlsx · Row 8']},
+      {name:'Tanaka, Yuki',entity:'NovaTech Inc.',pp:'ok',cob:"People's Rep ⚠",soc:'15-1211',wl:'II',area:'New York, NY',cap:'Regular',conf:'m',iss:1,key:'yuki',
+       srcDocs:['Yuki_Tanaka_Passport.pdf','NovaTech_H1B_2027_Intake.xlsx · Row 19']},
+      {name:'Müller, Lena',entity:'NovaTech Inc.',pp:'exp',cob:'Germany',soc:'15-1252',wl:'IV',area:'Seattle, WA',cap:'Regular',conf:'l',iss:2,key:'lena',
+       srcDocs:['Lena_Müller_Passport.pdf','NovaTech_H1B_2027_Intake.xlsx · Row 22']},
+      {name:'Kim, James',entity:'NovaTech Inc.',pp:'ok',cob:'South Korea',soc:'15-1132',wl:'III',area:'San Jose, CA',cap:'Adv. Degree',conf:'h',iss:0,key:'nt_james',
+       srcDocs:['NovaTech_H1B_2027_Intake.xlsx · Row 6','James_Kim_Passport.pdf']},
+      {name:'Huang, David',entity:'NovaTech Inc.',pp:'ok',cob:'Taiwan',soc:'15-1254',wl:'II',area:'San Jose, CA',cap:'Regular',conf:'h',iss:0,key:'nt_david',
+       srcDocs:['NovaTech_H1B_2027_Intake.xlsx · Row 7','David_Huang_Passport.pdf']},
+      {name:'Sharma, Neha',entity:'NovaTech Inc.',pp:'ok',cob:'India',soc:'15-1211',wl:'III',area:'Austin, TX',cap:'Adv. Degree',conf:'h',iss:0,key:'nt_neha',
+       srcDocs:['NovaTech_H1B_2027_Intake.xlsx · Row 9','Neha_Sharma_Passport.pdf']},
+    ],
+    beneMore:'Showing 8 of 23 beneficiaries',
+    log:[
+      {t:'e',text:'AI flag: Passport missing — Patel, Arjun · No passport document found',time:'Mar 08 · 11:05 AM · Alma AI'},
+      {t:'w',text:'AI flag: Wage level format — Krishnamurthy, Priya · "Level 2" → use "II"',time:'Mar 08 · 11:05 AM · Alma AI'},
+      {t:'w',text:"AI flag: Country name — Tanaka, Yuki · \"People's Rep\" → use \"China\"",time:'Mar 08 · 11:05 AM · Alma AI'},
+      {t:'ok',text:'AI validation complete — 23 beneficiaries · 17 clean, 4 uncertain, 2 blocked',time:'Mar 08 · 11:04 AM · Alma AI'},
+      {t:'ok',text:'Beneficiary data imported — 23 records from NovaTech_H1B_2027_Intake.xlsx',time:'Mar 08 · 10:48 AM · Keith Lee'},
+      {t:'ok',text:'Document uploaded: G28_Draft_NovaTech_2027.pdf',time:'Mar 08 · 10:22 AM · Keith Lee'},
+      {t:'ok',text:'Case opened — NovaTech Inc. · H-1B FY2027 · Assigned to Keith Lee',time:'Mar 07 · 10:02 AM · Keith Lee'},
+    ],
+    chk:[
+      {ok:true,label:'myUSCIS Org Account Confirmed',val:'ACC-2024-NT-00412'},
+      {ok:true,label:'Alma Legal Rep Access Confirmed',val:'Keith Lee, Esq.'},
+      {ok:true,label:'Legal Entity Name & EIN',val:'NovaTech Inc. · EIN 47-2831940'},
+      {ok:true,label:'Authorized Signatory',val:'Sarah Chen, VP People'},
+      {ok:true,label:'Employer Admin Contact',val:'james.wu@novatech.com'},
+      {ok:true,label:'G-28 Readiness Status',val:'Ready — pending submission'},
+    ],
+    docs:[
+      {name:'NovaTech_Certificate_of_Incorporation.pdf',meta:'Mar 07 · 2.1 MB'},
+      {name:'EIN_Confirmation_Letter.pdf',meta:'Mar 07 · 0.4 MB'},
+      {name:'G28_Draft_NovaTech_2027.pdf',meta:'Mar 08 · 0.6 MB'},
+    ],
+    chkNote:'',uscisNote:'',
+    uscis:{batchId:'',regs:'',date:'',error:''},
+  },
+  meridian:{
+    name:'Meridian Software LLC',ein:'EIN 82-1047563',atty:'Cynthia Huang',date:'Mar 09',
+    chipClass:'chip-intake',chipText:'Intake Incomplete',
+    steps:[{l:'Intake',a:1},{l:'Validation'},{l:'Template'},{l:'USCIS Upload'},{l:'G-28 / Approval'},{l:'Payment'},{l:'Submitted'}],
+    pbState:1,srcDocs:[],bh:null,bene:[],beneMore:'',
+    log:[
+      {t:'ok',text:'Document uploaded: Meridian_EIN_Letter.pdf',time:'Mar 09 · 15:45 PM · Cynthia Huang'},
+      {t:'w',text:'Checklist incomplete — beneficiary data not yet collected',time:'Mar 09 · 15:10 PM · Alma AI'},
+      {t:'ok',text:'Case opened — Meridian Software LLC · H-1B FY2027 · Assigned to Cynthia Huang',time:'Mar 09 · 15:00 PM · Cynthia Huang'},
+    ],
+    chk:[
+      {ok:true,label:'myUSCIS Org Account Confirmed',val:'ACC-2024-MS-00198'},
+      {ok:true,label:'Alma Legal Rep Access Confirmed',val:'Cynthia Huang, Esq.'},
+      {ok:true,label:'Legal Entity Name & EIN',val:'Meridian Software LLC · EIN 82-1047563'},
+      {ok:false,label:'Authorized Signatory',val:'Not yet collected'},
+      {ok:false,label:'Employer Admin Contact',val:'Not yet confirmed'},
+      {ok:false,label:'G-28 Readiness Status',val:'Pending signatory confirmation'},
+    ],
+    docs:[{name:'Meridian_EIN_Letter.pdf',meta:'Mar 09 · 0.3 MB'}],
+    chkNote:'',uscisNote:'',uscis:{batchId:'',regs:'',date:'',error:''},
+  },
+  apex:{
+    name:'Apex Dynamics Corp',ein:'EIN 61-3920174',atty:'Keith Lee',date:'Mar 06',
+    chipClass:'chip-template',chipText:'Ready for Template',
+    steps:[{l:'Intake',d:1},{l:'Validation',d:1},{l:'Template',a:1},{l:'USCIS Upload'},{l:'G-28 / Approval'},{l:'Payment'},{l:'Submitted'}],
+    pbState:2,
+    bh:{total:41,clean:41,review:0,blocked:0,tags:[]},
+    srcDocs:[
+      {name:'Apex_H1B_2027_Intake.xlsx',meta:'Mar 07 · 2.4 MB',status:'ok',statusText:'✓ Extracted'},
+      {name:'Apex_Entity_Certificate.pdf',meta:'Mar 06 · 1.8 MB',status:'ok',statusText:'✓ Extracted'},
+      {name:'Marcus_Webb_Authorization.pdf',meta:'Mar 06 · 0.3 MB',status:'ok',statusText:'✓ Extracted'},
+    ],
+    bene:[
+      {name:'Okonkwo, Chidera',entity:'Apex Dynamics',pp:'ok',cob:'Nigeria',soc:'15-1252',wl:'III',area:'Chicago, IL',cap:'Regular',conf:'h',iss:0,key:'apex_chidera',srcDocs:['Apex_H1B_2027_Intake.xlsx · Row 2','Chidera_Okonkwo_Passport.pdf']},
+      {name:'Li, Mei',entity:'Apex Dynamics',pp:'ok',cob:'China',soc:'15-1254',wl:'II',area:'Chicago, IL',cap:'Adv. Degree',conf:'h',iss:0,key:'apex_mei',srcDocs:['Apex_H1B_2027_Intake.xlsx · Row 3','Mei_Li_Passport.pdf']},
+      {name:'Ramos, Carlos',entity:'Apex Dynamics',pp:'ok',cob:'Mexico',soc:'15-1211',wl:'III',area:'Houston, TX',cap:'Regular',conf:'h',iss:0,key:'apex_carlos',srcDocs:['Apex_H1B_2027_Intake.xlsx · Row 4','Carlos_Ramos_Passport.pdf']},
+      {name:'Singh, Harpreet',entity:'Apex Dynamics',pp:'ok',cob:'India',soc:'15-1299',wl:'IV',area:'Chicago, IL',cap:'Adv. Degree',conf:'h',iss:0,key:'apex_harpreet',srcDocs:['Apex_H1B_2027_Intake.xlsx · Row 5','Harpreet_Singh_Passport.pdf']},
+      {name:'Park, Soo-Jin',entity:'Apex Dynamics',pp:'ok',cob:'South Korea',soc:'15-1132',wl:'II',area:'Chicago, IL',cap:'Regular',conf:'h',iss:0,key:'apex_soojin',srcDocs:['Apex_H1B_2027_Intake.xlsx · Row 6','Soo-Jin_Park_Passport.pdf']},
+    ],
+    beneMore:'Showing 5 of 41 beneficiaries · All records clean',
+    log:[
+      {t:'ok',text:'AI validation complete — 41 beneficiaries · 41 clean, 0 issues',time:'Mar 07 · 09:22 AM · Alma AI'},
+      {t:'ok',text:'Beneficiary data imported — 41 records from Apex_H1B_2027_Intake.xlsx',time:'Mar 07 · 09:10 AM · Keith Lee'},
+      {t:'ok',text:'Case opened — Apex Dynamics Corp · H-1B FY2027 · Assigned to Keith Lee',time:'Mar 06 · 12:10 PM · Keith Lee'},
+    ],
+    chk:[
+      {ok:true,label:'myUSCIS Org Account Confirmed',val:'ACC-2024-AD-00305'},
+      {ok:true,label:'Alma Legal Rep Access Confirmed',val:'Keith Lee, Esq.'},
+      {ok:true,label:'Legal Entity Name & EIN',val:'Apex Dynamics Corp · EIN 61-3920174'},
+      {ok:true,label:'Authorized Signatory',val:'Marcus Webb, Chief People Officer'},
+      {ok:true,label:'Employer Admin Contact',val:'ops@apexdynamics.com'},
+      {ok:true,label:'G-28 Readiness Status',val:'Ready — pending submission'},
+    ],
+    docs:[
+      {name:'Apex_Dynamics_EIN_Confirmation.pdf',meta:'Mar 06 · 0.5 MB'},
+      {name:'Apex_Entity_Certificate.pdf',meta:'Mar 06 · 1.8 MB'},
+    ],
+    chkNote:'',uscisNote:'',uscis:{batchId:'',regs:'',date:'',error:''},
+  }
+};
+
+const DRAWER_DEFS = {
+  wei:{name:'Wei, Chen',sub:'NovaTech Inc. · Regular Cap',
+    fields:[{l:'Full Legal Name',v:'Chen Wei'},{l:'Date of Birth',v:'1993-02-18'},{l:'Country of Birth',v:'China'},{l:'Country of Citizenship',v:'China'},{l:'Passport No.',v:'E88123456'},{l:'Passport Expiry',v:'2030-01-22'},{l:'SOC Code',v:'15-1252'},{l:'OEWS Wage Level',v:'III'},{l:'Area of Employment',v:'San Jose, CA'},{l:'Position Title',v:'Principal Engineer'}],
+    flags:[]},
+  priya:{name:'Krishnamurthy, Priya',sub:'NovaTech Inc. · Advanced Degree',
+    fields:[{l:'Full Legal Name',v:'Priya Krishnamurthy'},{l:'Date of Birth',v:'1991-04-12'},{l:'Country of Birth',v:'India'},{l:'Country of Citizenship',v:'India'},{l:'Passport No.',v:'N8824751A'},{l:'Passport Expiry',v:'2029-03-08'},{l:'SOC Code',v:'15-1254'},{l:'OEWS Wage Level',v:'Level 2 ⚠'},{l:'Area of Employment',v:'San Jose, CA'},{l:'Position Title',v:'Software Engineer II'}],
+    flags:[
+      {type:'warn',label:'FORMAT',title:'Wage level format invalid',src:'NovaTech_H1B_2027_Intake.xlsx · Row 14 · Col "Wage Level"',fix:'USCIS requires Roman numerals. Change <strong>"Level 2"</strong> to <strong>"II"</strong>.'},
+      {type:'warn',label:'CONSISTENCY',title:'Name mismatch: intake vs. passport',src:'Intake form vs. Priya_Krishnamurthy_Passport.pdf',fix:'Intake: <strong>"Priya Krishnamurthy"</strong> · Passport: <strong>"Priya A. Krishnamurthy"</strong>. Confirm correct full legal name.'},
+    ]},
+  arjun:{name:'Patel, Arjun',sub:'NovaTech Inc. · Regular Cap — BLOCKED',
+    fields:[{l:'Full Legal Name',v:'Arjun Patel'},{l:'Date of Birth',v:'1988-11-22'},{l:'Country of Birth',v:'India'},{l:'Country of Citizenship',v:'India'},{l:'Passport No.',v:'— MISSING —'},{l:'Passport Expiry',v:'— MISSING —'},{l:'SOC Code',v:'15-1299'},{l:'OEWS Wage Level',v:'II'},{l:'Area of Employment',v:'Austin, TX'},{l:'Position Title',v:'Senior Data Engineer'}],
+    info:'Found in FY2026 Alma records — prior season registration, not a current-season duplicate risk.',
+    flags:[
+      {type:'error',label:'COMPLETENESS',title:'Passport document missing',src:'No passport file found in uploaded documents for Arjun Patel',fix:'Request passport scan from employer. Registration cannot proceed without a valid passport number and expiration date.'},
+      {type:'error',label:'COMPLETENESS',title:'Passport number and expiry blank',src:'NovaTech_H1B_2027_Intake.xlsx · Row 8 · Cols "Passport No." and "Expiry"',fix:'Fields are empty in the intake spreadsheet. Collect passport details from employer before template generation.'},
+    ]},
+  yuki:{name:'Tanaka, Yuki',sub:'NovaTech Inc. · Regular Cap',
+    fields:[{l:'Full Legal Name',v:'Yuki Tanaka'},{l:'Date of Birth',v:'1995-07-03'},{l:'Country of Birth',v:"People's Rep ⚠"},{l:'Country of Citizenship',v:'Japan'},{l:'Passport No.',v:'TK2291847'},{l:'Passport Expiry',v:'2028-09-15'},{l:'SOC Code',v:'15-1211'},{l:'OEWS Wage Level',v:'II'},{l:'Area of Employment',v:'New York, NY'},{l:'Position Title',v:'ML Engineer'}],
+    flags:[
+      {type:'warn',label:'FORMAT',title:'Country of birth does not match USCIS reference list',src:"NovaTech_H1B_2027_Intake.xlsx · Row 19 · Col \"Country of Birth\"",fix:'USCIS reference requires <strong>"China"</strong> for People\'s Republic of China.'},
+    ]},
+  lena:{name:'Müller, Lena',sub:'NovaTech Inc. · Regular Cap — BLOCKED',
+    fields:[{l:'Full Legal Name',v:'Lena Müller'},{l:'Date of Birth',v:'1990-05-14'},{l:'Country of Birth',v:'Germany'},{l:'Country of Citizenship',v:'Germany'},{l:'Passport No.',v:'C9X1823741'},{l:'Passport Expiry',v:'2024-12-01 ⚠ EXPIRED'},{l:'SOC Code',v:'15-1252'},{l:'OEWS Wage Level',v:'IV'},{l:'Area of Employment',v:'Seattle, WA'},{l:'Position Title',v:'Distinguished Engineer'}],
+    flags:[
+      {type:'error',label:'COMPLETENESS',title:'Passport expired',src:'Lena_Müller_Passport.pdf · Expiry: Dec 1, 2024',fix:'Passport expired over 12 months ago. Request renewed passport document from employer.'},
+      {type:'warn',label:'FORMAT',title:'Special character — verify USCIS encoding',src:'NovaTech_H1B_2027_Intake.xlsx · Row 22 · Col "Name"',fix:'Umlaut "ü" may render incorrectly in USCIS template. Confirm USCIS accepts diacritics, or use ASCII equivalent <strong>"u"</strong>.'},
+    ]},
+  nt_james:{name:'Kim, James',sub:'NovaTech Inc. · Advanced Degree',
+    fields:[{l:'Full Legal Name',v:'James Kim'},{l:'Date of Birth',v:'1991-09-15'},{l:'Country of Birth',v:'South Korea'},{l:'Country of Citizenship',v:'South Korea'},{l:'Passport No.',v:'M38472910'},{l:'Passport Expiry',v:'2030-08-22'},{l:'SOC Code',v:'15-1132'},{l:'OEWS Wage Level',v:'III'},{l:'Area of Employment',v:'San Jose, CA'},{l:'Position Title',v:'Engineering Manager'}],
+    flags:[]},
+  nt_david:{name:'Huang, David',sub:'NovaTech Inc. · Regular Cap',
+    fields:[{l:'Full Legal Name',v:'David Huang'},{l:'Date of Birth',v:'1993-04-28'},{l:'Country of Birth',v:'Taiwan'},{l:'Country of Citizenship',v:'Taiwan'},{l:'Passport No.',v:'T20193845'},{l:'Passport Expiry',v:'2029-12-01'},{l:'SOC Code',v:'15-1254'},{l:'OEWS Wage Level',v:'II'},{l:'Area of Employment',v:'San Jose, CA'},{l:'Position Title',v:'ML Engineer'}],
+    flags:[]},
+  nt_neha:{name:'Sharma, Neha',sub:'NovaTech Inc. · Advanced Degree',
+    fields:[{l:'Full Legal Name',v:'Neha Sharma'},{l:'Date of Birth',v:'1995-02-11'},{l:'Country of Birth',v:'India'},{l:'Country of Citizenship',v:'India'},{l:'Passport No.',v:'P8291047A'},{l:'Passport Expiry',v:'2031-05-30'},{l:'SOC Code',v:'15-1211'},{l:'OEWS Wage Level',v:'III'},{l:'Area of Employment',v:'Austin, TX'},{l:'Position Title',v:'Product Data Scientist'}],
+    flags:[]},
+  apex_chidera:{name:'Okonkwo, Chidera',sub:'Apex Dynamics Corp · Regular Cap',
+    fields:[{l:'Full Legal Name',v:'Chidera Okonkwo'},{l:'Date of Birth',v:'1990-03-14'},{l:'Country of Birth',v:'Nigeria'},{l:'Country of Citizenship',v:'Nigeria'},{l:'Passport No.',v:'A12345678'},{l:'Passport Expiry',v:'2029-06-20'},{l:'SOC Code',v:'15-1252'},{l:'OEWS Wage Level',v:'III'},{l:'Area of Employment',v:'Chicago, IL'},{l:'Position Title',v:'Software Engineer'}],
+    flags:[]},
+  apex_mei:{name:'Li, Mei',sub:'Apex Dynamics Corp · Advanced Degree',
+    fields:[{l:'Full Legal Name',v:'Mei Li'},{l:'Date of Birth',v:'1994-07-08'},{l:'Country of Birth',v:'China'},{l:'Country of Citizenship',v:'China'},{l:'Passport No.',v:'E72918364'},{l:'Passport Expiry',v:'2031-02-11'},{l:'SOC Code',v:'15-1254'},{l:'OEWS Wage Level',v:'II'},{l:'Area of Employment',v:'Chicago, IL'},{l:'Position Title',v:'Data Scientist'}],
+    flags:[]},
+  apex_carlos:{name:'Ramos, Carlos',sub:'Apex Dynamics Corp · Regular Cap',
+    fields:[{l:'Full Legal Name',v:'Carlos Ramos'},{l:'Date of Birth',v:'1989-11-03'},{l:'Country of Birth',v:'Mexico'},{l:'Country of Citizenship',v:'Mexico'},{l:'Passport No.',v:'G98271635'},{l:'Passport Expiry',v:'2028-09-17'},{l:'SOC Code',v:'15-1211'},{l:'OEWS Wage Level',v:'III'},{l:'Area of Employment',v:'Houston, TX'},{l:'Position Title',v:'Systems Analyst'}],
+    flags:[]},
+  apex_harpreet:{name:'Singh, Harpreet',sub:'Apex Dynamics Corp · Advanced Degree',
+    fields:[{l:'Full Legal Name',v:'Harpreet Singh'},{l:'Date of Birth',v:'1992-05-22'},{l:'Country of Birth',v:'India'},{l:'Country of Citizenship',v:'India'},{l:'Passport No.',v:'P3847291A'},{l:'Passport Expiry',v:'2030-11-05'},{l:'SOC Code',v:'15-1299'},{l:'OEWS Wage Level',v:'IV'},{l:'Area of Employment',v:'Chicago, IL'},{l:'Position Title',v:'Principal Engineer'}],
+    flags:[]},
+  apex_soojin:{name:'Park, Soo-Jin',sub:'Apex Dynamics Corp · Regular Cap',
+    fields:[{l:'Full Legal Name',v:'Soo-Jin Park'},{l:'Date of Birth',v:'1996-01-30'},{l:'Country of Birth',v:'South Korea'},{l:'Country of Citizenship',v:'South Korea'},{l:'Passport No.',v:'M20193847'},{l:'Passport Expiry',v:'2032-04-14'},{l:'SOC Code',v:'15-1132'},{l:'OEWS Wage Level',v:'II'},{l:'Area of Employment',v:'Chicago, IL'},{l:'Position Title',v:'Product Engineer'}],
+    flags:[]},
+};
+
+/* ═══════════════ STATE ═══════════════ */
+let currentCase=null, currentDrawerKey=null, drawerEditMode=false;
+
+/* ═══════════════ WORKBENCH ═══════════════ */
+function openCase(id){
+  currentCase=id;
+  const c=CASES[id];
+  document.getElementById('ch-name').textContent=c.name;
+  const chip=document.getElementById('ch-chip');
+  chip.className='chip '+c.chipClass; chip.textContent=c.chipText;
+  document.getElementById('ch-ein').textContent=c.ein;
+  document.getElementById('ch-atty').textContent=c.atty;
+  document.getElementById('ch-date').textContent='Opened '+c.date;
+  // stepper
+  const st=document.getElementById('stepper'); st.innerHTML='';
+  c.steps.forEach((s,i)=>{
+    if(i>0){const a=document.createElement('span');a.className='step-arr';a.textContent='›';st.appendChild(a);}
+    const el=document.createElement('div');
+    el.className='step'+(s.d?' done':'')+(s.a?' active':'')+(s.b?' blocked':'');
+    el.innerHTML=`<span class="step-dot"></span>${s.l}`;
+    st.appendChild(el);
+  });
+  renderPanelA(c);
+  const s1=document.getElementById('pb-s1'),s2=document.getElementById('pb-s2');
+  if(c.pbState===1){s1.style.display='flex';s2.style.display='none';}
+  else{s1.style.display='none';s2.style.display='flex';renderPanelB(c);}
+  const badge=document.getElementById('pb-badge');
+  const blocked=c.bh?c.bh.blocked:0;
+  if(blocked>0){badge.textContent=blocked+' blocked';badge.style.display='';}else{badge.style.display='none';}
+  renderLog(c);
+  document.getElementById('view-wb').classList.remove('active');
+  document.getElementById('view-detail').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab')[0].classList.add('active');
+  document.getElementById('pa').classList.add('active');
+}
+
+function backToWB(){
+  document.getElementById('view-detail').classList.remove('active');
+  document.getElementById('view-wb').classList.add('active');
+  closeDrawer();
+}
+
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+/* ═══════════════ PANEL A ═══════════════ */
+function renderPanelA(c){
+  document.getElementById('pa-body').innerHTML=
+    `<div class="pa-grid">${buildChkCard(c)}${buildDocsCard(c)}</div>${buildUscisCard(c)}`;
+}
+
+function buildChkCard(c){
+  let rows=c.chk.map((item,i)=>`
+    <div class="chk-item">
+      <div class="chk-icon ${item.ok?'chk-yes':'chk-no'}">${item.ok?'✓':'!'}</div>
+      <div style="flex:1">
+        <div class="chk-label">${item.label}</div>
+        <div class="chk-val" id="chk-val-${i}">${item.val}</div>
+        <input class="chk-inp" id="chk-inp-${i}" value="${item.val}" style="display:none">
+      </div>
+    </div>`).join('');
+  const noteRead=c.chkNote||'<span class="notes-ph">No notes added.</span>';
+  return `<div class="card">
+    <div class="card-header">
+      <div class="card-title">Employer Readiness Checklist</div>
+      <button class="edit-btn" id="chk-edit-btn" onclick="editCard('chk',${c.chk.length})">Edit</button>
+    </div>
+    <div class="card-body">
+      ${rows}
+      <span class="notes-label">Attorney Notes</span>
+      <div class="notes-read" id="chk-note-read">${noteRead}</div>
+      <textarea class="notes-area" id="chk-note-inp" style="display:none" placeholder="Add a note…">${c.chkNote||''}</textarea>
+    </div>
+    <div class="card-footer" id="chk-footer" style="display:none">
+      <span class="save-confirm" id="chk-saved" style="display:none">✓ Saved</span>
+      <button class="cancel-btn" onclick="cancelCard('chk',${c.chk.length})">Cancel</button>
+      <button class="save-btn" onclick="saveCard('chk',${c.chk.length})">Save</button>
+    </div>
+  </div>`;
+}
+
+function buildDocsCard(c){
+  let rows=c.docs.map(d=>`
+    <div class="doc-item">
+      <span style="font-size:14px">📄</span>
+      <div style="flex:1"><div class="doc-name">${d.name}</div><div class="doc-meta">${d.meta}</div></div>
+      <div class="doc-ok">✓ Extracted</div>
+    </div>`).join('');
+  return `<div class="card">
+    <div class="card-header"><div class="card-title">Employer Entity Documents</div></div>
+    <div class="card-body" style="padding-bottom:14px">
+      ${rows}
+      <button class="add-doc-btn" onclick="alert('File picker: upload employer entity document')">+ Upload Document</button>
+    </div>
+  </div>`;
+}
+
+function buildUscisCard(c){
+  const u=c.uscis;
+  const fields=[
+    {lbl:'USCIS Batch ID(s)',id:'batchId',ph:'Enter after upload to myUSCIS',hint:'May be multiple IDs if batch > 250 registrations.'},
+    {lbl:'Registrations Filed',id:'regs',ph:'e.g. 23',w:'100px'},
+    {lbl:'USCIS Draft Start Date',id:'date',ph:'',type:'date',w:'170px',hint:'30-day expiration clock starts from this date.'},
+    {lbl:'Error Codes (if any)',id:'error',ph:'Paste USCIS error code + brief description',hint:'AI-assisted explanation available in Phase 2.'},
+  ];
+  let rows=fields.map(f=>`
+    <div class="uscis-row">
+      <div class="uscis-lbl">${f.lbl}</div>
+      <div>
+        <div class="read-val" id="uscis-read-${f.id}">${u[f.id]||'<span class="read-empty">Not yet recorded</span>'}</div>
+        <input class="fi" id="uscis-inp-${f.id}" type="${f.type||'text'}" value="${u[f.id]||''}" placeholder="${f.ph}" style="display:none${f.w?';width:'+f.w:''}" />
+        ${f.hint?`<div class="fi-hint" id="uscis-hint-${f.id}" style="display:none">${f.hint}</div>`:''}
+      </div>
+    </div>`).join('');
+  const noteRead=c.uscisNote||'<span class="notes-ph">No notes added.</span>';
+  return `<div class="card">
+    <div class="card-header">
+      <div class="card-title">USCIS Submission Record
+        <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:6px">Complete after manual upload to myUSCIS</span>
+      </div>
+      <button class="edit-btn" id="uscis-edit-btn" onclick="editUscis()">Edit</button>
+    </div>
+    <div class="card-body">
+      ${rows}
+      <span class="notes-label">Attorney Notes</span>
+      <div class="notes-read" id="uscis-note-read">${noteRead}</div>
+      <textarea class="notes-area" id="uscis-note-inp" style="display:none" placeholder="Add a note about this submission…">${c.uscisNote||''}</textarea>
+    </div>
+    <div class="card-footer" id="uscis-footer" style="display:none">
+      <span class="save-confirm" id="uscis-saved" style="display:none">✓ Saved</span>
+      <button class="cancel-btn" onclick="cancelUscis()">Cancel</button>
+      <button class="save-btn" onclick="saveUscis()">Save Record</button>
+    </div>
+  </div>`;
+}
+
+/* edit/save helpers */
+function editCard(id,n){
+  document.getElementById(id+'-edit-btn').style.display='none';
+  document.getElementById(id+'-footer').style.display='flex';
+  for(let i=0;i<n;i++){
+    document.getElementById(id+'-val-'+i).style.display='none';
+    document.getElementById(id+'-inp-'+i).style.display='';
+  }
+  document.getElementById(id+'-note-read').style.display='none';
+  document.getElementById(id+'-note-inp').style.display='';
+}
+function cancelCard(id,n){
+  document.getElementById(id+'-edit-btn').style.display='';
+  document.getElementById(id+'-footer').style.display='none';
+  for(let i=0;i<n;i++){
+    document.getElementById(id+'-val-'+i).style.display='';
+    document.getElementById(id+'-inp-'+i).style.display='none';
+  }
+  document.getElementById(id+'-note-read').style.display='';
+  document.getElementById(id+'-note-inp').style.display='none';
+}
+function saveCard(id,n){
+  const c=CASES[currentCase];
+  for(let i=0;i<n;i++){
+    const v=document.getElementById(id+'-inp-'+i).value;
+    document.getElementById(id+'-val-'+i).textContent=v;
+    c.chk[i].val=v;
+  }
+  const note=document.getElementById(id+'-note-inp').value;
+  c.chkNote=note;
+  const nr=document.getElementById(id+'-note-read');
+  nr.innerHTML=note||'<span class="notes-ph">No notes added.</span>';
+  cancelCard(id,n);
+  flash(id+'-saved');
+}
+function editUscis(){
+  document.getElementById('uscis-edit-btn').style.display='none';
+  document.getElementById('uscis-footer').style.display='flex';
+  ['batchId','regs','date','error'].forEach(k=>{
+    document.getElementById('uscis-read-'+k).style.display='none';
+    document.getElementById('uscis-inp-'+k).style.display='';
+    const h=document.getElementById('uscis-hint-'+k);
+    if(h)h.style.display='';
+  });
+  document.getElementById('uscis-note-read').style.display='none';
+  document.getElementById('uscis-note-inp').style.display='';
+}
+function cancelUscis(){
+  document.getElementById('uscis-edit-btn').style.display='';
+  document.getElementById('uscis-footer').style.display='none';
+  ['batchId','regs','date','error'].forEach(k=>{
+    document.getElementById('uscis-read-'+k).style.display='';
+    document.getElementById('uscis-inp-'+k).style.display='none';
+    const h=document.getElementById('uscis-hint-'+k);
+    if(h)h.style.display='none';
+  });
+  document.getElementById('uscis-note-read').style.display='';
+  document.getElementById('uscis-note-inp').style.display='none';
+}
+function saveUscis(){
+  const c=CASES[currentCase];
+  ['batchId','regs','date','error'].forEach(k=>{
+    const v=document.getElementById('uscis-inp-'+k).value;
+    c.uscis[k]=v;
+    document.getElementById('uscis-read-'+k).innerHTML=v||'<span class="read-empty">Not yet recorded</span>';
+  });
+  const note=document.getElementById('uscis-note-inp').value;
+  c.uscisNote=note;
+  const nr=document.getElementById('uscis-note-read');
+  nr.innerHTML=note||'<span class="notes-ph">No notes added.</span>';
+  cancelUscis();
+  flash('uscis-saved');
+}
+function flash(id){
+  const el=document.getElementById(id);
+  el.style.display='inline';
+  setTimeout(()=>{el.style.display='none';},2000);
+}
+
+/* ═══════════════ PANEL B ═══════════════ */
+// Lookup table: row index → beneficiary data for the current case render
+let BENE_ROW_MAP = {};
+
+function renderPanelB(c){
+  const bh=c.bh;
+  document.getElementById('bh-total').textContent=bh.total;
+  document.getElementById('bh-clean').textContent=bh.clean;
+  document.getElementById('bh-review').textContent=bh.review;
+  document.getElementById('bh-blocked').textContent=bh.blocked;
+  const tags=document.getElementById('issue-tags');
+  tags.innerHTML='';
+  bh.tags.forEach(t=>{
+    const cls=t.includes('format')?'itag-fmt':t.includes('completeness')?'itag-comp':'itag-dup';
+    tags.innerHTML+=`<span class="itag ${cls}">${t}</span>`;
+  });
+  const gb=document.getElementById('gen-btn');
+  if(bh.blocked===0){gb.classList.add('enabled');gb.innerHTML='⬇ Generate Template';}
+  else{gb.classList.remove('enabled');gb.innerHTML=`⬇ Generate Template <span style="font-size:10px;opacity:0.7">(${bh.blocked} blocked)</span>`;}
+  document.getElementById('src-count').textContent=c.srcDocs.length;
+  // build row lookup — avoids passing JSON through onclick strings
+  BENE_ROW_MAP={};
+  const tbody=document.getElementById('bene-tbody');
+  tbody.innerHTML='';
+  c.bene.forEach((b,idx)=>{
+    BENE_ROW_MAP[idx]={key:b.key, srcDocs:b.srcDocs||[]};
+    const ppC=b.pp==='ok'?'pp-ok':b.pp==='miss'?'pp-miss':'pp-exp';
+    const ppT=b.pp==='ok'?'● Collected':b.pp==='miss'?'● Missing':'● Expired';
+    // Status chip — Ready / Needs Review / Blocked
+    const statC=b.conf==='h'?'conf-h':b.conf==='m'?'conf-m':'conf-l';
+    const statT=b.conf==='h'?'● Ready':b.conf==='m'?'● Needs Review':'● Blocked';
+    const statTip=b.conf==='h'?'System confident — no issues detected':b.conf==='m'?'System uncertain — attorney review required':'Error detected — template generation locked';
+    const issC=b.iss===0?'iss-clean':b.conf==='l'?'iss-block':'iss-warn';
+    const issT=b.iss===0?'✓ Clean':b.conf==='l'?`🚫 ${b.iss} issue${b.iss>1?'s':''}`:`⚠ ${b.iss} issue${b.iss>1?'s':''}`;
+    const wl=b.wl.includes('⚠')?`<span style="color:var(--amber);font-weight:600" class="mono">${b.wl}</span>`:`<span class="mono">${b.wl}</span>`;
+    const cob=b.cob.includes('⚠')?`<span style="color:var(--red);font-weight:600" class="mono">${b.cob}</span>`:`<span class="mono">${b.cob}</span>`;
+    const tr=document.createElement('tr');
+    tr.style.cursor='pointer';
+    tr.addEventListener('click',()=>openDrawerByIdx(idx));
+    tr.innerHTML=`
+      <td><div class="bene-name">${b.name}</div></td>
+      <td><span class="mono" style="font-size:12px">${b.entity}</span></td>
+      <td><span class="${ppC}">${ppT}</span></td>
+      <td>${cob}</td><td><span class="mono">${b.soc}</span></td><td>${wl}</td>
+      <td><span class="mono" style="font-size:12px">${b.area}</span></td>
+      <td><span class="mono" style="font-size:12px">${b.cap}</span></td>
+      <td><span class="conf-chip ${statC}" title="${statTip}">${statT}</span></td>
+      <td><span class="iss-badge ${issC}">${issT}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('bene-more').textContent=c.beneMore;
+}
+
+function openDrawerByIdx(idx){
+  const row=BENE_ROW_MAP[idx];
+  if(!row) return;
+  openDrawer(row.key, row.srcDocs);
+}
+
+/* ═══════════════ SOURCE DOCS MODAL ═══════════════ */
+function openSrcModal(){
+  const c=CASES[currentCase];
+  const body=document.getElementById('src-modal-body');
+  if(c.srcDocs.length===0){
+    body.innerHTML='<div style="color:var(--muted);font-size:13px;padding:12px 0">No documents uploaded yet.</div>';
+  } else {
+    body.innerHTML=c.srcDocs.map(d=>`
+      <div class="src-modal-row">
+        <span style="font-size:14px">📄</span>
+        <div class="src-modal-name">${d.name}</div>
+        <div class="src-modal-meta">${d.meta}</div>
+        <div class="src-modal-status ${d.status==='ok'?'src-status-ok':'src-status-warn'}">${d.statusText}</div>
+      </div>`).join('')+
+      `<button class="add-more-btn" onclick="alert('File picker: upload additional beneficiary documents. New records will be merged into the existing table.')">+ Add Documents</button>`;
+  }
+  document.getElementById('src-modal-overlay').classList.add('open');
+}
+function closeSrcModal(){
+  document.getElementById('src-modal-overlay').classList.remove('open');
+}
+
+/* ═══════════════ PANEL C ═══════════════ */
+function renderLog(c){
+  document.getElementById('log-items').innerHTML=c.log.map(l=>`
+    <div class="log-item">
+      <div class="log-dot ${l.t==='w'?'w':l.t==='e'?'e':''}"></div>
+      <div><div class="log-text">${l.text}</div><div class="log-time">${l.time}</div></div>
+    </div>`).join('');
+}
+
+/* ═══════════════ DRAWER ═══════════════ */
+function openDrawer(key, srcDocs){
+  const d=DRAWER_DEFS[key]; if(!d) return;
+  currentDrawerKey=key;
+  drawerEditMode=false;
+  if(!Array.isArray(srcDocs)) srcDocs=[];
+  document.getElementById('d-name').textContent=d.name;
+  document.getElementById('d-sub').textContent=d.sub;
+  document.getElementById('d-edit-btn').style.display='';
+  document.getElementById('d-edit-btn').textContent='Edit';
+  renderDrawerContent(d, false, srcDocs);
+  document.getElementById('d-overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+  // store srcDocs on the drawer element for edit/cancel to retrieve
+  document.getElementById('drawer')._srcDocs=srcDocs;
+}
+
+function renderDrawerContent(d, editMode, srcDocs){
+  // fields section
+  let fields=`<div>
+    <div class="ds-title">Beneficiary Fields</div>
+    <div class="field-grid">`;
+  d.fields.forEach(f=>{
+    fields+=`<div class="fi-item">
+      <div class="fi-lbl">${f.l}</div>`;
+    if(editMode) fields+=`<input class="fi-inp" value="${f.v}">`;
+    else fields+=`<div class="fi-val">${f.v}</div>`;
+    fields+=`</div>`;
+  });
+  fields+=`</div>`;
+  if(editMode){
+    fields+=`<div class="drawer-edit-footer">
+      <button class="cancel-btn" onclick="cancelDrawerEdit()">Cancel</button>
+      <button class="save-btn" onclick="saveDrawerEdit()">Save</button>
+    </div>`;
+  }
+  fields+=`</div>`;
+
+  // source docs section — shown for all beneficiaries
+  let srcSection=`<div class="drawer-src-section">
+    <div class="ds-title" style="margin-bottom:6px">Source Documents</div>`;
+  if(srcDocs && srcDocs.length>0){
+    srcDocs.forEach(doc=>{
+      srcSection+=`<a class="drawer-src-link" onclick="alert('Opens: ${doc} in new tab')" title="${doc}">
+        <span style="font-size:13px">📎</span>
+        <span class="drawer-src-name">${doc}</span>
+      </a>`;
+    });
+  } else {
+    srcSection+=`<div style="font-size:12px;color:var(--muted);font-style:italic">No source documents linked.</div>`;
+  }
+  srcSection+=`</div>`;
+
+  // info note
+  const infoHtml=d.info?`<div class="info-note">ℹ ${d.info}</div>`:'';
+
+  // flags
+  let flagsHtml='';
+  if(d.flags.length===0){
+    flagsHtml=`<div class="clean-badge">✓ All validation checks passed — system is confident data is correct</div>`;
+  } else {
+    flagsHtml=`<div><div class="ds-title">AI Validation Flags (${d.flags.length})</div>`;
+    d.flags.forEach((f,i)=>{
+      const tc=f.type==='warn'?'ftype-w':'ftype-e';
+      const fc=f.type==='warn'?'flag-warn':'flag-error';
+      flagsHtml+=`<div class="flag-card ${fc}">
+        <div class="fh"><span class="ftype ${tc}">${f.label}</span><span class="ftitle">${f.title}</span></div>
+        <a class="fsrc-link" onclick="alert('Opens source document: ${f.src.split('·')[0].trim()} in new tab')">${f.src}</a>
+        <div class="ffix">Suggested fix: ${f.fix}</div>
+        <div class="f-actions">
+          <button class="f-resolve" onclick="openResolveModal(${i})">Mark Resolved</button>
+          <button class="f-dismiss" onclick="alert('Flag dismissed — attorney override logged. Reason required for audit trail.')">Dismiss</button>
+        </div>
+      </div>`;
+    });
+    flagsHtml+=`</div>`;
+  }
+
+  document.getElementById('d-body').innerHTML=fields+srcSection+infoHtml+flagsHtml;
+}
+
+function enableDrawerEdit(){
+  const d=DRAWER_DEFS[currentDrawerKey];
+  const srcDocs=document.getElementById('drawer')._srcDocs||[];
+  drawerEditMode=true;
+  document.getElementById('d-edit-btn').style.display='none';
+  renderDrawerContent(d, true, srcDocs);
+}
+
+function cancelDrawerEdit(){
+  const d=DRAWER_DEFS[currentDrawerKey];
+  const srcDocs=document.getElementById('drawer')._srcDocs||[];
+  drawerEditMode=false;
+  document.getElementById('d-edit-btn').style.display='';
+  renderDrawerContent(d, false, srcDocs);
+}
+
+function saveDrawerEdit(){
+  // In a real product this would persist. Here we just exit edit mode.
+  cancelDrawerEdit();
+  // show brief confirmation
+  const saved=document.createElement('div');
+  saved.style.cssText='font-size:11.5px;color:var(--teal);font-weight:500;text-align:right;padding:4px 0;';
+  saved.textContent='✓ Changes saved';
+  document.getElementById('d-body').prepend(saved);
+  setTimeout(()=>saved.remove(),2000);
+}
+
+function closeDrawer(){
+  document.getElementById('d-overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+  currentDrawerKey=null; drawerEditMode=false;
+}
+
+/* ═══════════════ RESOLVE MODAL ═══════════════ */
+function openResolveModal(flagIdx){
+  const d=DRAWER_DEFS[currentDrawerKey];
+  const f=d.flags[flagIdx];
+  const typeEl=document.getElementById('modal-flag-type-el');
+  typeEl.textContent=f.label;
+  typeEl.className='modal-flag-type-el '+(f.type==='warn'?'ftype-w':'ftype-e');
+  document.getElementById('modal-flag-title').textContent=f.title;
+  document.getElementById('modal-flag-src').textContent=f.src;
+  document.getElementById('modal-reason').value='';
+  document.getElementById('resolve-modal').classList.add('open');
+}
+function closeResolveModal(){document.getElementById('resolve-modal').classList.remove('open');}
+function confirmResolve(){
+  const r=document.getElementById('modal-reason').value.trim();
+  if(!r){alert('Please enter a reason. This is required for the audit log.');return;}
+  closeResolveModal();
+  alert(`Flag marked resolved.\n\nReason logged:\n"${r}"\n\nRecorded under Catherine Tai · ${new Date().toLocaleString()}`);
+}
+
+/* ═══════════════ SIMULATE UPLOAD ═══════════════ */
+function simUpload(){
+  const zone=document.querySelector('.upload-zone');
+  const proc=document.getElementById('processing');
+  zone.style.display='none'; proc.style.display='flex';
+  document.getElementById('proc-lbl').textContent='Parsing documents and extracting beneficiary records…';
+  setTimeout(()=>{document.getElementById('proc-lbl').textContent='Running completeness, format, consistency, and duplicate checks…';},1500);
+  setTimeout(()=>{
+    const c=CASES.meridian;
+    c.pbState=2;
+    c.bh={total:8,clean:6,review:1,blocked:1,tags:['1 format error','1 completeness gap']};
+    c.srcDocs=[
+      {name:'Meridian_Beneficiary_Intake.xlsx',meta:'just uploaded · 0.9 MB',status:'ok',statusText:'✓ Extracted'},
+      {name:'Meridian_EIN_Letter.pdf',meta:'Mar 09 · 0.3 MB',status:'ok',statusText:'✓ Extracted'},
+    ];
+    c.bene=[
+      {name:'Pham, Linh',entity:'Meridian Software',pp:'ok',cob:'Vietnam',soc:'15-1252',wl:'II',area:'Boston, MA',cap:'Regular',conf:'h',iss:0,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 2','Linh_Pham_Passport.pdf']},
+      {name:'Gupta, Rohan',entity:'Meridian Software',pp:'ok',cob:'India',soc:'15-1254',wl:'III',area:'Boston, MA',cap:'Adv. Degree',conf:'h',iss:0,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 3','Rohan_Gupta_Passport.pdf']},
+      {name:'Santos, Ana',entity:'Meridian Software',pp:'miss',cob:'Brazil',soc:'15-1211',wl:'II',area:'Boston, MA',cap:'Regular',conf:'l',iss:1,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 4']},
+      {name:'Chen, Michael',entity:'Meridian Software',pp:'ok',cob:'Taiwan',soc:'15-1299',wl:'Level 1 ⚠',area:'Boston, MA',cap:'Regular',conf:'m',iss:1,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 5','Michael_Chen_Passport.pdf']},
+      {name:'Nguyen, Thi',entity:'Meridian Software',pp:'ok',cob:'Vietnam',soc:'15-1132',wl:'II',area:'Cambridge, MA',cap:'Regular',conf:'h',iss:0,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 6','Thi_Nguyen_Passport.pdf']},
+      {name:'Abubakar, Yemi',entity:'Meridian Software',pp:'ok',cob:'Nigeria',soc:'15-1252',wl:'III',area:'Boston, MA',cap:'Adv. Degree',conf:'h',iss:0,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 7','Yemi_Abubakar_Passport.pdf']},
+      {name:'Kim, Grace',entity:'Meridian Software',pp:'ok',cob:'South Korea',soc:'15-1211',wl:'II',area:'Cambridge, MA',cap:'Regular',conf:'h',iss:0,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 8','Grace_Kim_Passport.pdf']},
+      {name:'Ivanova, Natalia',entity:'Meridian Software',pp:'ok',cob:'Russia',soc:'15-1254',wl:'II',area:'Boston, MA',cap:'Regular',conf:'h',iss:0,key:'gen',srcDocs:['Meridian_Beneficiary_Intake.xlsx · Row 9','Natalia_Ivanova_Passport.pdf']},
+    ];
+    c.beneMore='Showing 8 of 8 beneficiaries';
+    proc.style.display='none';
+    document.getElementById('pb-s1').style.display='none';
+    document.getElementById('pb-s2').style.display='flex';
+    renderPanelB(c);
+    const badge=document.getElementById('pb-badge');
+    badge.textContent='1 blocked'; badge.style.display='';
+  },3500);
+}
+</script>
+</body>
+</html>
